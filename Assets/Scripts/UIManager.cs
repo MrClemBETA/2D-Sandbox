@@ -2,12 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using MItem = Assets.Scripts.Models.Item;
 
 public class UIManager : MonoBehaviour
 {
     public static UIManager instance;
 
     public Text objectInVicinity;
+    public Text inventoryText;
+    public Text messageText;
 
     void Awake()
     {
@@ -41,5 +44,45 @@ public class UIManager : MonoBehaviour
             objectInVicinity.gameObject.SetActive(true);
             objectInVicinity.text = name + ": " + weight + " lbs.";
         }
+    }
+
+    public void UpdateInventoryText()
+    {
+        string text = "Inventory:\n";
+        foreach(MItem i in Knight.instance.GetInventory().Items)
+        {
+            text += i.Name + "\n";
+        }
+
+        inventoryText.text = text;
+    }
+
+    public void ShowMessage(string text)
+    {
+        messageText.gameObject.SetActive(true);
+        messageText.text = text;
+        // Set a default color to full opaque by changing
+        // alpha to 1
+        Color c = messageText.color;
+        c.a = 1f;
+        messageText.color = c;
+
+        StartCoroutine(FadeMessageAway());
+    }
+
+    private IEnumerator FadeMessageAway()
+    {
+        yield return new WaitForSeconds(3f);
+
+        float fadeTime = 1.5f;
+        while(messageText.color.a >= 0)
+        {
+            Color c = messageText.color;
+            c.a -= Time.deltaTime / fadeTime;
+            messageText.color = c;
+            yield return null;
+        }
+
+        messageText.gameObject.SetActive(false);
     }
 }

@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Assets.Scripts.Models;
+using MItem = Assets.Scripts.Models.Item;
 using UnityEngine;
 
 public class Knight : MonoBehaviour
@@ -9,7 +11,7 @@ public class Knight : MonoBehaviour
 
     private Animator anim;
     private GameObject objectInVicinity;
-
+    private Inventory inventory;
     private void Awake()
     {
         if(instance == null)
@@ -25,6 +27,7 @@ public class Knight : MonoBehaviour
     void Start()
     {
         anim = GetComponent<Animator>();
+        inventory = new Inventory(3);
     }
 
     // Update is called once per frame
@@ -46,6 +49,12 @@ public class Knight : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.E) && objectInVicinity != null)
         {
             PickUpItem();
+        }
+
+        // Drop Top Item
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            DropItem();
         }
 
         if(Input.GetAxis("Horizontal") > 0)
@@ -73,6 +82,32 @@ public class Knight : MonoBehaviour
 
     private void PickUpItem()
     {
-        Destroy(objectInVicinity);
+        if (inventory.AddItem(objectInVicinity.GetComponent<Item>().Info))
+        {
+            UIManager.instance.UpdateInventoryText();
+            Destroy(objectInVicinity);
+        } else
+        {
+            UIManager.instance.ShowMessage("Unable to pick up item.");
+        }
+    }
+
+    public Inventory GetInventory()
+    {
+        return inventory;
+    }
+
+    private void DropItem()
+    {
+        if(inventory.Items.Count > 0)
+        {
+            MItem item = inventory.RemoveItem(0);
+            var itemObject = Resources.Load(item.PrefabName);
+            GameObject obj = (GameObject)Instantiate(itemObject);
+            obj.transform.position = transform.position;
+        } else
+        {
+            UIManager.instance.ShowMessage("No items to drop!");
+        }
     }
 }

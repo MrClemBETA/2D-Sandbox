@@ -12,6 +12,8 @@ public class Knight : MonoBehaviour
     private Animator anim;
     private GameObject objectInVicinity;
     private Inventory inventory;
+    private int health = 100;
+    private int maxHealth = 100;
     private void Awake()
     {
         if(instance == null)
@@ -57,6 +59,19 @@ public class Knight : MonoBehaviour
             DropItem();
         }
 
+        // To Take Damage
+        if(Input.GetKeyDown(KeyCode.O))
+        {
+            TakeDamage(10);
+        }
+
+        // To Heal Damage
+        if(Input.GetKeyDown(KeyCode.P))
+        {
+            HealDamage(10);
+        }
+
+        // Movement
         if(Input.GetAxis("Horizontal") > 0)
         {
             anim.SetBool("isWalking", true);
@@ -109,5 +124,25 @@ public class Knight : MonoBehaviour
         {
             UIManager.instance.ShowMessage("No items to drop!");
         }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        health = health - damage < 0 ? 0 : health - damage;
+        HUDManager.instance.ChangeHealthValue(health);
+
+        if(health == 0)
+        {
+            anim.SetTrigger("isDead");
+        } else
+        {
+            anim.SetTrigger("takesDamage");
+        }
+    }
+
+    public void HealDamage(int hp)
+    {
+        health = health + hp > maxHealth ? maxHealth : health + hp;
+        HUDManager.instance.ChangeHealthValue(health);
     }
 }
